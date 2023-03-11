@@ -6,6 +6,8 @@
 ## Reference
 
 - https://github.com/mckaywrigley/paul-graham-gpt
+- https://github.com/openai/openai-cookbook/blob/main/examples/How_to_stream_completions.ipynb
+- https://github.com/ddiu8081/chatgpt-demo
 
 ## 思路
 

@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Configuration, OpenAIApi } from 'openai';
+import { supabaseClient } from '@/utils/supabaseClient';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -10,11 +10,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       apiKey: process.env.OPENAI_API_KEY
     });
     const openai = new OpenAIApi(configuration);
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
 
     for (let i = 0; i < sentenceList.length; i++) {
       const chunk = sentenceList[i];
@@ -29,7 +24,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       console.log(embedding, '-----------');
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('pg')
         .insert({
           content,
@@ -49,7 +44,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
-    res.status(200).json({ data: 'ok' });
+    res.status(200).json('ok');
   } catch (error) {
     console.error(JSON.stringify(error));
     res.status(500).json({ message: 'error' });
