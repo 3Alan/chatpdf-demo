@@ -139,7 +139,7 @@ const Home: NextPage = () => {
       <main>
         <div>
           <Button type="primary" onClick={onReading}>start reading</Button>
-          <Dragger {...props}>
+          {/* <Dragger {...props}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
@@ -148,7 +148,7 @@ const Home: NextPage = () => {
               Support for a single or bulk upload. Strictly prohibit from uploading company data or
               other band files
             </p>
-          </Dragger>
+          </Dragger> */}
 
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
             {Array.from(new Array(numPages), (el, index) => (
