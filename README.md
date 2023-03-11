@@ -1,38 +1,24 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+- 左边对话框右边 pdf
+- 回答问题引用右侧的 pdf 高亮
+- pdf 框选提问题
+- pdf 可进行标注
+- 标注后的 pdf 可以导出
+- 会员体系
 
-## Getting Started
+## Reference
 
-First, run the development server:
+- https://github.com/mckaywrigley/paul-graham-gpt
+- https://github.com/SkywalkerDarren/chatWeb
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## 思路
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. 提取 pdf 文本
+2. 基于 openai token 将文本分段
+3. 调用 gpt embedding api 生成向量并保存起来（数据库）
+4. 开始提问题
+5. 将问题通过 openai 向量接口查询并返回对应 embedding
+6. 将返回的 embedding 和保存起来的 embedding 进行比对匹配最合适的分段，这个时候可以做高亮
+7. 将匹配好的分段组成 prompt 然后就可以问 chatgpt 问题了
+8. 能不能不依赖数据库进行 vector 对比
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+跑完数据库后记得关掉该 api
