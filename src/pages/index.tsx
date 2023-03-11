@@ -57,6 +57,9 @@ const Home: NextPage = () => {
     });
 
     const { chunkList } = res.data;
+
+    console.log(chunkList.length);
+    
     const chunkSize = 4; // 每组的元素个数
 
     // 由于vercel单个接口10秒限制，所以分批次处理
