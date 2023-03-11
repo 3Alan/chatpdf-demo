@@ -1,7 +1,7 @@
 import { Card, Input } from 'antd';
 import Message from './Message';
 
-const ChatWindow = ({ className }) => {
+const ChatWindow = ({ className }: { className?: string }) => {
   return (
     <Card className={className} title="Card title" bordered={false} style={{ width: 300 }}>
       <div className="flex flex-col justify-between h-full">
