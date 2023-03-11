@@ -1,40 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
-import { encode } from "gpt-3-encoder";
-import { Configuration, OpenAIApi } from "openai";
+import { createClient } from '@supabase/supabase-js';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { Configuration, OpenAIApi } from 'openai';
 
-function generateNewChunkList(chunkList: string[]) {
-  const combined = [];
-  let currentString = "";
-
-  for (let i = 0; i < chunkList.length; i++) {
-    if (encode(currentString).length + encode(chunkList[i]).length > 300) {
-      combined.push({
-        content_length: currentString.trim().length,
-        content: currentString.trim(),
-        content_tokens: encode(currentString.trim()).length,
-      });
-      currentString = "";
-    }
-
-    currentString += chunkList[i];
-  }
-
-  combined.push({
-    content_length: currentString.trim().length,
-    content: currentString.trim(),
-    content_tokens: encode(currentString.trim()).length,
-  });
-
-  return combined;
-}
-
-const handler = async (req: Request): Promise<Response> => {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { sentenceList } = req.body as any;
-    
 
     const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY
     });
     const openai = new OpenAIApi(configuration);
 
@@ -43,15 +16,13 @@ const handler = async (req: Request): Promise<Response> => {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const chunkList = generateNewChunkList(sentenceList);
-
-    for (let i = 0; i < chunkList.length; i++) {
-      const chunk = chunkList[i];
+    for (let i = 0; i < sentenceList.length; i++) {
+      const chunk = sentenceList[i];
       const { content, content_length, content_tokens } = chunk;
 
       const embeddingResponse = await openai.createEmbedding({
-        model: "text-embedding-ada-002",
-        input: content,
+        model: 'text-embedding-ada-002',
+        input: content
       });
 
       const [{ embedding }] = embeddingResponse.data.data;
@@ -59,28 +30,28 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(embedding, '-----------');
 
       const { data, error } = await supabase
-        .from("pg")
+        .from('pg')
         .insert({
           content,
           content_length,
           content_tokens,
-          embedding,
+          embedding
         })
-        .select("*");
+        .select('*');
 
       if (error) {
-        console.log("error", error);
+        console.log('error', error);
       } else {
-        console.log("saved", i);
+        console.log('saved', i);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    return new Response('ok', { status: 200 });
+    res.status(200).json({ data: 'ok' });
   } catch (error) {
     console.error(error);
-    return new Response("Error", { status: 500 });
+    res.status(500).json({ message: 'error' });
   }
 };
 
