@@ -40,7 +40,7 @@ function addHighlightText(element: any) {
 }
 
 const Home: NextPage = () => {
-  const [file, setFile] = useState<File | string>('https://microsoft.github.io/Web-Dev-For-Beginners/pdf/readme.pdf');
+  const [file, setFile] = useState<File | string>('/github-privacy.pdf');
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(false);
   const pageRefList = useRef<HTMLCanvasElement[]>([]);
