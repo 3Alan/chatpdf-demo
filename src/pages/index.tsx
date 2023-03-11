@@ -142,8 +142,8 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Input placeholder="apiKey" value={apiKey} onChange={e => setApiKey(e.target.value)} />
-      <main>
-        <div className="flex flex-row m-auto w-4/5 space-x-4">
+      <main className="bg-slate-100">
+        <div className="flex flex-row m-auto w-4/5 space-x-4 h-screen overflow-hidden">
           {/* <Button loading={loading} type="primary" onClick={onReading}>start reading</Button> */}
           {/* <Dragger {...props}>
             <p className="ant-upload-drag-icon">
@@ -156,10 +156,10 @@ const Home: NextPage = () => {
             </p>
           </Dragger> */}
 
-          <ChatWindow className="basis-1/2" apiKey={apiKey} />
+          <ChatWindow className="flex flex-col h-full overflow-hidden basis-1/2" apiKey={apiKey} />
 
           <Document
-            className="basis-1/2 h-screen overflow-auto"
+            className="basis-1/2 h-full overflow-auto"
             file={file}
             onLoadSuccess={onDocumentLoadSuccess}
           >

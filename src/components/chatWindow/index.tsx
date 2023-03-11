@@ -1,6 +1,7 @@
-import { Card, Input, message } from 'antd';
+import { SettingOutlined } from '@ant-design/icons';
+import { Button, Card, Input, message, Modal } from 'antd';
 import axios from 'axios';
-import { FC, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import Message from './Message';
 
 interface ChatWindowProps {
@@ -9,21 +10,30 @@ interface ChatWindowProps {
 }
 
 interface MessageItem {
-  reply: string;
-  references: { id: number; content: string }[];
+  question?: string;
+  reply?: string;
+  references?: { id: number; content: string }[];
 }
 
 const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
+  const chatWindowEndAnchorRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState('');
   const [messageList, setMessageList] = useState<MessageItem[]>([]);
 
   const onSearch = async (value: string) => {
+    setQuery('');
     try {
       if (!apiKey) {
         message.error('please input your apiKey');
         return;
       }
 
+      setMessageList(pre => [...pre, { question: value }]);
+      chatWindowEndAnchorRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end'
+      });
       let answer = {
         reply: '',
         references: []
@@ -35,9 +45,8 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        data: { query: value, apiKey, matches: 1 }
+        data: { query: value, apiKey, matches: 3 }
       });
-      setLoading(false);
       answer.references = embedRes.data;
 
       const prompt = `
@@ -63,53 +72,69 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         throw new Error('No data');
       }
       const reader = data.getReader();
-      const decoder = new TextDecoder('utf-8');
+      const decoder = new TextDecoder();
       let done = false;
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
-        console.log(chunkValue, 'chunkValue');
-
         answer.reply = answer.reply + chunkValue;
       }
 
-      setMessageList([...messageList, answer]);
+      setMessageList(pre => [...pre, answer]);
+      chatWindowEndAnchorRef.current?.scrollIntoView({
+        behavior: 'smooth'
+      });
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
-
-    // inputRef.current?.focus();
   };
 
-  console.log(messageList);
-
   return (
-    <Card className={className} title="Card title" bordered={false} style={{ width: 300 }}>
-      <div className="flex flex-col justify-between h-full">
-        <div>
-          <Message>21421421</Message>
-
-          {messageList.map((item, key) => (
-            <div key={key}>
-              <div>{item.reply}</div>
-              {item.references?.map(referenceItem => (
-                <div key={referenceItem.id}>{referenceItem.content}</div>
-              ))}
-            </div>
+    <>
+      <Card
+        className={className}
+        bodyStyle={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
+        title="Chat with PDF"
+        bordered={false}
+        extra={<Button icon={<SettingOutlined />}></Button>}
+      >
+        <div ref={chatWindowEndAnchorRef} className="flex flex-col flex-1 overflow-auto">
+          {messageList.map((item, index) => (
+            <>
+              {item.question ? (
+                <Message isQuestion>{item.question}</Message>
+              ) : (
+                <Message key={index} references={item.references}>
+                  {item.reply}
+                </Message>
+              )}
+            </>
           ))}
         </div>
-        <Input.Search
-          placeholder="input search text"
-          allowClear
-          loading={loading}
-          onSearch={onSearch}
-          style={{ width: 304 }}
-        />
-      </div>
-    </Card>
+
+        <div className="py-6">
+          <Input.Search
+            enterButton="Ask Question"
+            size="large"
+            value={query}
+            placeholder="input search text"
+            allowClear
+            loading={loading}
+            onChange={e => setQuery(e.target.value)}
+            onSearch={onSearch}
+          />
+        </div>
+
+        {/* <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+          <p>Some contents...</p>
+          <p>Some contents...</p>
+          <p>Some contents...</p>
+        </Modal> */}
+      </Card>
+    </>
   );
 };
 
