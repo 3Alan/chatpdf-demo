@@ -8,6 +8,7 @@ import { message, Upload } from 'antd';
 import { type TextItem } from 'pdfjs-dist/types/src/display/api';
 import { useRef, useState } from 'react';
 import axios from 'axios';
+import ChatWindow from '../components/chatWindow';
 
 const { Dragger } = Upload;
 
@@ -58,8 +59,6 @@ const Home: NextPage = () => {
 
     const { chunkList } = res.data;
 
-    console.log(chunkList.length);
-    
     const chunkSize = 4; // 每组的元素个数
 
     // 由于vercel单个接口10秒限制，所以分批次处理
@@ -143,8 +142,8 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <div>
-          <Button type="primary" onClick={onReading}>start reading</Button>
+        <div className="flex flex-row m-auto w-4/5 space-x-4">
+          {/* <Button loading={loading} type="primary" onClick={onReading}>start reading</Button> */}
           {/* <Dragger {...props}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
@@ -156,7 +155,9 @@ const Home: NextPage = () => {
             </p>
           </Dragger> */}
 
-          <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+          <ChatWindow className="basis-1/2" />
+
+          <Document className="basis-1/2 h-screen overflow-auto" file={file} onLoadSuccess={onDocumentLoadSuccess}>
             {Array.from(new Array(numPages), (el, index) => (
               <Page
                 key={`page_${index + 1}`}
@@ -170,7 +171,6 @@ const Home: NextPage = () => {
           </Document>
         </div>
       </main>
-      <Spin spinning={loading} />
     </>
   );
 };
