@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { InboxOutlined } from '@ant-design/icons';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Button, UploadProps } from 'antd';
+import { Button, Spin, UploadProps } from 'antd';
 import { message, Upload } from 'antd';
 import { type TextItem } from 'pdfjs-dist/types/src/display/api';
 import { useRef, useState } from 'react';
@@ -42,10 +42,12 @@ function addHighlightText(element: any) {
 const Home: NextPage = () => {
   const [file, setFile] = useState<File | string>('https://microsoft.github.io/Web-Dev-For-Beginners/pdf/readme.pdf');
   const [numPages, setNumPages] = useState(null);
+  const [loading, setLoading] = useState(false);
   const pageRefList = useRef<HTMLCanvasElement[]>([]);
   const sentenceRef = useRef<string[]>();
 
   async function generateEmbedding(sentenceList: any[]) {
+    setLoading(true)
     const res = await axios('/api/split-chunks', {
       method: 'POST',
       headers: {
@@ -68,7 +70,11 @@ const Home: NextPage = () => {
         },
         data: { sentenceList: chunk }
       });
+
+      // 防止vercel误判位ddos攻击
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
+    setLoading(false)
   }
 
   async function onDocumentLoadSuccess(doc: any) {
@@ -164,6 +170,7 @@ const Home: NextPage = () => {
           </Document>
         </div>
       </main>
+      <Spin spinning={loading} />
     </>
   );
 };
