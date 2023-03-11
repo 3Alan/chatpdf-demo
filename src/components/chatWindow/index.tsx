@@ -18,52 +18,63 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
   const [messageList, setMessageList] = useState<MessageItem[]>([]);
 
   const onSearch = async (value: string) => {
-    if (!apiKey) {
-      message.error('please input your apiKey');
-      return;
+    try {
+      if (!apiKey) {
+        message.error('please input your apiKey');
+        return;
+      }
+
+      let answer = {} as any;
+
+      setLoading(true);
+      const embedRes = await axios('/api/search-embed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: { query: value, apiKey, matches: 1 }
+      });
+      setLoading(false);
+      answer.references = embedRes.data;
+
+      const prompt = `
+      Use the following passages to provide an answer to the query: "${value}"
+      ${embedRes.data?.map((d: any) => d.content).join('\n\n')}
+      `;
+
+      const answerResponse = await fetch('/api/search-answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt, apiKey })
+      });
+      setLoading(false);
+
+      if (!answerResponse.ok) {
+        throw new Error(answerResponse.statusText);
+      }
+
+      const data = answerResponse.body;
+      if (!data) {
+        throw new Error('No data');
+      }
+      const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        answer.reply = answer.reply + chunkValue;
+      }
+
+      setMessageList([...messageList, answer]);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
     }
-
-    let answer = {} as any;
-
-    setLoading(true);
-    const embedRes = await axios('/api/search-embed', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: { query: value, apiKey, matches: 1 }
-    });
-    setLoading(false);
-
-    console.log(embedRes.data);
-    answer.references = embedRes.data;
-
-    const prompt = `
-    Use the following passages to provide an answer to the query: "${value}"
-    ${embedRes.data?.map((d: any) => d.content).join('\n\n')}
-    `;
-
-    const answerResponse = await axios('/api/search-answer', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      data: { prompt, apiKey }
-    });
-    setLoading(false);
-
-    const reader = answerResponse.data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-      answer.reply = answer.reply + chunkValue;
-    }
-
-    setMessageList([...messageList, answer]);
 
     // inputRef.current?.focus();
   };
