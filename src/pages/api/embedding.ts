@@ -45,12 +45,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log('saved', i);
       }
 
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // 防止触发openai的每分钟限制
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     res.status(200).json({ data: 'ok' });
   } catch (error) {
-    console.error(error);
+    console.error(JSON.stringify(error));
     res.status(500).json({ message: 'error' });
   }
 };

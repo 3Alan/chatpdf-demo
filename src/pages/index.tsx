@@ -70,9 +70,6 @@ const Home: NextPage = () => {
         },
         data: { sentenceList: chunk }
       });
-
-      // 防止vercel误判位ddos攻击
-      await new Promise(resolve => setTimeout(resolve, 300));
     }
     setLoading(false)
   }
