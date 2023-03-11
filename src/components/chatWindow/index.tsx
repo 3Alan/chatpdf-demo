@@ -24,7 +24,10 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         return;
       }
 
-      let answer = {} as any;
+      let answer = {
+        reply: '',
+        references: []
+      };
 
       setLoading(true);
       const embedRes = await axios('/api/search-embed', {
@@ -60,13 +63,15 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         throw new Error('No data');
       }
       const reader = data.getReader();
-      const decoder = new TextDecoder();
+      const decoder = new TextDecoder('utf-8');
       let done = false;
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
+        console.log(chunkValue, 'chunkValue');
+
         answer.reply = answer.reply + chunkValue;
       }
 
