@@ -1,0 +1,30 @@
+{
+  "name": "chatgpt-pdf-demo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/node": "18.15.0",
+    "@types/react": "18.0.28",
+    "@types/react-dom": "18.0.11",
+    "eslint": "8.36.0",
+    "eslint-config-next": "13.2.4",
+    "next": "13.2.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "4.9.5",
+    "antd": "^5.3.0",
+    "gpt-3-encoder": "^1.1.4",
+    "openai": "^3.2.1",
+    "react-pdf": "^6.2.2",
+    "@supabase/supabase-js": "^2.10.0"
+  },
+  "devDependencies": {
+    "@types/react-pdf": "^6.2.0"
+  }
+}
