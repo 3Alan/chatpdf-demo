@@ -22,7 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const { embedding } = embedRes.data.data[0];
 
-    const { data: chunks, error } = await supabaseClient.rpc('pg_search', {
+    const { data: chunks, error } = await supabaseClient.rpc('chatgpt_search', {
       query_embedding: embedding,
       similarity_threshold: 0.01,
       match_count: matches

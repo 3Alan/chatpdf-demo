@@ -1,27 +1,34 @@
 import { encode } from 'gpt-3-encoder';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-function generateNewChunkList(chunkList: string[]) {
+function generateNewChunkList(chunkList: { sentence: string; pageNum: number }[]) {
   const combined = [];
   let currentString = '';
+  let currentPageNum = 1;
 
   for (let i = 0; i < chunkList.length; i++) {
-    if (encode(currentString).length + encode(chunkList[i]).length > 300) {
+    if (
+      currentPageNum !== chunkList[i].pageNum ||
+      encode(currentString).length + encode(chunkList[i].sentence).length > 300
+    ) {
       combined.push({
         content_length: currentString.trim().length,
         content: currentString.trim(),
-        content_tokens: encode(currentString.trim()).length
+        content_tokens: encode(currentString.trim()).length,
+        page_num: currentPageNum
       });
       currentString = '';
     }
 
-    currentString += chunkList[i];
+    currentString += chunkList[i].sentence;
+    currentPageNum = chunkList[i].pageNum;
   }
 
   combined.push({
     content_length: currentString.trim().length,
     content: currentString.trim(),
-    content_tokens: encode(currentString.trim()).length
+    content_tokens: encode(currentString.trim()).length,
+    page_num: currentPageNum
   });
 
   return combined;

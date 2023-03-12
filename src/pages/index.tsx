@@ -2,12 +2,13 @@ import { type NextPage } from 'next';
 import Head from 'next/head';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Card, UploadProps } from 'antd';
+import { Button, Card, UploadProps } from 'antd';
 import { message, Upload } from 'antd';
 import { type TextItem } from 'pdfjs-dist/types/src/display/api';
 import { useRef, useState } from 'react';
 import axios from 'axios';
 import ChatWindow from '../components/chatWindow';
+import { InboxOutlined } from '@ant-design/icons';
 
 const { Dragger } = Upload;
 
@@ -91,10 +92,10 @@ const Home: NextPage = () => {
         .join('');
 
       const sentenceList = currentPageText.split(sentenceEndSymbol);
-      allSentenceList.push(...sentenceList);
+      allSentenceList.push(...sentenceList.map((item: string) => ({ sentence: item, pageNum })));
     }
 
-    sentenceRef.current = allSentenceList.filter(item => item);
+    sentenceRef.current = allSentenceList.filter(item => item.sentence);
     setNumPages(numPages);
   }
 
@@ -144,8 +145,10 @@ const Home: NextPage = () => {
       </Head>
       <main className="bg-slate-100 py-4 h-screen">
         <div className="flex flex-row justify-center m-auto w-5/6 space-x-4 h-full overflow-hidden">
-          {/* <Button loading={loading} type="primary" onClick={onReading}>start reading</Button> */}
-          {/* <Dragger {...props}>
+          <Button loading={loading} type="primary" onClick={onReading}>
+            start reading
+          </Button>
+          <Dragger {...props}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
@@ -154,19 +157,18 @@ const Home: NextPage = () => {
               Support for a single or bulk upload. Strictly prohibit from uploading company data or
               other band files
             </p>
-          </Dragger> */}
+          </Dragger>
 
           <ChatWindow className="flex flex-col h-full overflow-hidden" />
 
           <Card style={{ width: 700 }} className="h-full overflow-auto" bodyStyle={{ padding: 0 }}>
             <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-              {Array.from(new Array(numPages), (el, index) => (
+              {Array.from(new Array(numPages), (_el, index) => (
                 <Page
                   key={`page_${index + 1}`}
                   pageNumber={index + 1}
                   width={700}
                   renderAnnotationLayer={false}
-                  renderTextLayer={false}
                   canvasRef={ref => pageRefList.current.push(ref as HTMLCanvasElement)}
                 />
               ))}

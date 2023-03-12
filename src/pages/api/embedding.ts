@@ -13,7 +13,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     for (let i = 0; i < sentenceList.length; i++) {
       const chunk = sentenceList[i];
-      const { content, content_length, content_tokens } = chunk;
+      const { content, content_length, content_tokens, page_num } = chunk;
 
       const embeddingResponse = await openai.createEmbedding({
         model: 'text-embedding-ada-002',
@@ -23,11 +23,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const [{ embedding }] = embeddingResponse.data.data;
 
       const { error } = await supabaseClient
-        .from('pg')
+        .from('chatgpt')
         .insert({
           content,
           content_length,
           content_tokens,
+          page_num,
           embedding
         })
         .select('*');
