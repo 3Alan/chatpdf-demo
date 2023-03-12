@@ -22,7 +22,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const [{ embedding }] = embeddingResponse.data.data;
 
-      const { data, error } = await supabaseClient
+      const { error } = await supabaseClient
         .from('pg')
         .insert({
           content,

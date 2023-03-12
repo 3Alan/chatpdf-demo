@@ -15,7 +15,7 @@ interface MessageItem {
 }
 
 const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
-  const chatWindowEndAnchorRef = useRef<HTMLDivElement>(null);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
   const settings = useRef<any>(null);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -32,24 +32,19 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
     }
   }, [showSettingModal]);
 
-  const onSearch = async (value: string) => {
-    setQuery('');
-    try {
-      if (!settings.current?.apiKey) {
-        message.error('please input your apiKey');
-        return;
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      const chatWindow = chatWindowRef.current;
+
+      if (chatWindow) {
+        chatWindow.scrollTop = chatWindow.scrollHeight + 100;
+        console.log(chatWindow.scrollTop, chatWindow.scrollHeight);
       }
+    }, 0);
+  };
 
-      setMessageList(pre => [...pre, { question: value }]);
-      chatWindowEndAnchorRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end'
-      });
-      let answer = {
-        reply: '',
-        references: []
-      };
-
+  const onReply = async (value: string) => {
+    try {
       setLoading(true);
       const embedRes = await axios('/api/search-embed', {
         method: 'POST',
@@ -58,7 +53,6 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         },
         data: { query: value, apiKey: settings.current?.apiKey, matches: 3 }
       });
-      answer.references = embedRes.data;
 
       const prompt = `
       Use the following text to provide an answer to the query: "${value}"
@@ -85,29 +79,36 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
       const reader = data.getReader();
       const decoder = new TextDecoder();
       let done = false;
-
-      const newMessageList = [...messageList];
-      messageList.push(answer);
-      setMessageList(newMessageList);
-
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
-        answer.reply = answer.reply + chunkValue;
-        console.log(newMessageList, 'newMessageList', chunkValue);
 
-        newMessageList[messageList.length - 1] = answer;
-        setMessageList(newMessageList);
+        setMessageList(pre => {
+          return [
+            ...pre.slice(0, -1),
+            { ...pre.slice(-1), reply: pre.slice(-1)[0].reply + chunkValue }
+          ];
+        });
       }
 
-      chatWindowEndAnchorRef.current?.scrollIntoView({
-        behavior: 'smooth'
-      });
+      scrollToBottom();
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
+  };
+
+  const onSearch = async (value: string) => {
+    setQuery('');
+    if (!settings.current?.apiKey) {
+      message.error('please input your apiKey');
+      return;
+    }
+
+    setMessageList([...messageList, { question: value }, { reply: '' }]);
+    scrollToBottom();
+    onReply(value);
   };
 
   const onSaveSettings = () => {
@@ -125,32 +126,46 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
   return (
     <>
       <Card
+        style={{ width: 500 }}
         className={className}
-        bodyStyle={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
+        bodyStyle={{
+          flex: 1,
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '24px 0'
+        }}
         title="Chat with PDF"
         bordered={false}
         extra={
           <Button onClick={() => setShowSettingModal(true)} icon={<SettingOutlined />}></Button>
         }
       >
-        <div ref={chatWindowEndAnchorRef} className="flex flex-col flex-1 overflow-auto">
+        <div
+          ref={chatWindowRef}
+          className="scroll-smooth flex flex-col items-start flex-1 overflow-auto px-6"
+        >
           {messageList.map((item, index) => (
             <Fragment key={index}>
               {item.question ? (
-                <Message isQuestion>{item.question}</Message>
+                <Message isQuestion text={item.question} />
               ) : (
-                <Message references={item.references}>{item.reply}</Message>
+                <Message
+                  loading={loading && index === messageList.length - 1}
+                  references={item.references}
+                  text={item.reply || ''}
+                />
               )}
             </Fragment>
           ))}
         </div>
 
-        <div className="py-4">
+        <div className="p-4 pb-0 border-t border-t-gray-200 border-solid border-x-0 border-b-0">
           <Input.Search
             enterButton="Ask Question"
             size="large"
             value={query}
-            placeholder="input search text"
+            placeholder="input your question"
             allowClear
             loading={loading}
             onChange={e => setQuery(e.target.value)}
