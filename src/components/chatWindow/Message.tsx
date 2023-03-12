@@ -1,15 +1,17 @@
+import { Popover } from 'antd';
 import classNames from 'classnames';
 import { FC, PropsWithChildren, useEffect, useState } from 'react';
+import eventEmitter from '../../utils/eventEmitter';
 import Loading from './Loading';
 
 interface MessageProps extends PropsWithChildren {
   isQuestion?: boolean;
   loading?: boolean;
-  references?: { id: number; content: string }[];
+  references?: { id: number; content: string; page_num: number }[];
   text: string;
 }
 
-const Message: FC<MessageProps> = ({ text = '', isQuestion, references, loading }) => {
+const Message: FC<MessageProps> = ({ text = '', isQuestion, references = [], loading }) => {
   const [words, setWords] = useState<string[]>([]);
 
   useEffect(() => {
@@ -19,6 +21,10 @@ const Message: FC<MessageProps> = ({ text = '', isQuestion, references, loading 
   if (loading) {
     return <Loading />;
   }
+
+  const onPageNumClick = (num: number) => {
+    eventEmitter.emit('scrollToPage', num);
+  };
 
   return (
     <div
@@ -43,9 +49,23 @@ const Message: FC<MessageProps> = ({ text = '', isQuestion, references, loading 
         </div>
       )}
 
-      {references && (
+      {references.length > 0 && (
         <div className="px-3 pt-2 pb-2 border-t-gray-200 border-t text-right">
-          <span className="text-gray-600">{references.length} References</span>
+          <Popover
+            placement="rightBottom"
+            content={
+              <div className="w-96 h-96 overflow-auto">
+                {references.map((item, index) => (
+                  <div key={index} className="pb-3">
+                    <a onClick={() => onPageNumClick(item.page_num)}>#Page {item.page_num}</a>
+                    <div className="text-xs pl-1">{item.content}</div>
+                  </div>
+                ))}
+              </div>
+            }
+          >
+            <span className="cursor-pointer text-gray-600">{references.length} References</span>
+          </Popover>
         </div>
       )}
     </div>
