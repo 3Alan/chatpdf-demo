@@ -37,7 +37,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
       const chatWindow = chatWindowRef.current;
 
       if (chatWindow) {
-        chatWindow.scrollTop = chatWindow.scrollHeight + 100;
+        chatWindow.scrollTop = chatWindow.scrollHeight + 300;
       }
     }, 0);
   };
@@ -82,6 +82,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
+        console.log(chunkValue);
 
         setMessageList(pre => {
           return [
@@ -95,6 +96,8 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         });
         requestAnimationFrame(() => scrollToBottom());
       }
+
+      scrollToBottom();
     } catch (error) {
       setLoading(false);
       console.log(error);
@@ -181,7 +184,12 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
           onOk={onSaveSettings}
           onCancel={() => setShowSettingModal(false)}
         >
-          <Form form={form}>
+          <Form
+            form={form}
+            initialValues={{
+              apiKey: settings.current?.apiKey
+            }}
+          >
             <Form.Item
               label="apiKey"
               name="apiKey"

@@ -11,7 +11,7 @@ interface MessageProps extends PropsWithChildren {
   text: string;
 }
 
-const Message: FC<MessageProps> = ({ text = '', isQuestion, references, loading }) => {
+const Message: FC<MessageProps> = ({ text = '', isQuestion, references = [], loading }) => {
   const [words, setWords] = useState<string[]>([]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ const Message: FC<MessageProps> = ({ text = '', isQuestion, references, loading 
         </div>
       )}
 
-      {references && (
+      {references.length > 0 && (
         <div className="px-3 pt-2 pb-2 border-t-gray-200 border-t text-right">
           <Popover
             placement="rightBottom"

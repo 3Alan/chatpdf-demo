@@ -42,7 +42,7 @@ function addHighlightText(element: any) {
 }
 
 const Home: NextPage = () => {
-  const [file, setFile] = useState<File | string>('');
+  const [file, setFile] = useState<File | string>('/github-privacy.pdf');
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(false);
   const pdfRef = useRef<unknown>();
@@ -147,11 +147,11 @@ const Home: NextPage = () => {
       </Head>
       <main className="bg-slate-100 py-4 h-screen">
         <div className="flex flex-row justify-center m-auto w-5/6 space-x-4 h-full overflow-hidden">
-          <Button loading={loading} type="primary" onClick={onReading}>
-            start reading
-          </Button>
           {!file && (
             <>
+              <Button loading={loading} type="primary" onClick={onReading}>
+                start reading
+              </Button>
               <Dragger {...props}>
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
