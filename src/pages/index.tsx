@@ -5,10 +5,11 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Button, Card, UploadProps } from 'antd';
 import { message, Upload } from 'antd';
 import { type TextItem } from 'pdfjs-dist/types/src/display/api';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import ChatWindow from '../components/chatWindow';
 import { InboxOutlined } from '@ant-design/icons';
+import eventEmitter from '../utils/eventEmitter';
 
 const { Dragger } = Upload;
 
@@ -41,11 +42,26 @@ function addHighlightText(element: any) {
 }
 
 const Home: NextPage = () => {
-  const [file, setFile] = useState<File | string>('/github-privacy.pdf');
+  const [file, setFile] = useState<File | string>('');
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(false);
-  const pageRefList = useRef<HTMLCanvasElement[]>([]);
+  const pdfRef = useRef<unknown>();
   const sentenceRef = useRef<string[]>();
+
+  function scrollToPage(num: number) {
+    // @ts-ignore
+    pdfRef?.current.pages[num - 1].scrollIntoView();
+  }
+
+  useEffect(() => {
+    // @ts-ignore
+    eventEmitter.on('scrollToPage', scrollToPage);
+
+    return () => {
+      // @ts-ignore
+      eventEmitter.off('scrollToPage', scrollToPage);
+    };
+  }, []);
 
   async function generateEmbedding(sentenceList: any[]) {
     setLoading(true);
@@ -58,7 +74,6 @@ const Home: NextPage = () => {
     });
 
     const { chunkList } = res.data;
-
     const chunkSize = 2; // 每组的元素个数
 
     // 由于vercel单个接口10秒限制，所以分批次处理
@@ -89,7 +104,7 @@ const Home: NextPage = () => {
       const currentPageContent = await currentPage.getTextContent();
       const currentPageText = currentPageContent.items
         .map((item: any) => (item as TextItem).str)
-        .join('');
+        .join(' ');
 
       const sentenceList = currentPageText.split(sentenceEndSymbol);
       allSentenceList.push(...sentenceList.map((item: string) => ({ sentence: item, pageNum })));
@@ -102,19 +117,7 @@ const Home: NextPage = () => {
   const props: UploadProps = {
     name: 'file',
     beforeUpload: file => {
-      console.log(file);
-
       setFile(file);
-      // const reader = new FileReader();
-      // reader.onload = async function () {
-      //   const pdfData = new Uint8Array(reader.result as ArrayBuffer);
-      //   setFile(pdfData)
-      //   const text = await extractTextFromPdf(pdfData);
-      //   console.log(text);
-      // };
-
-      // reader.readAsArrayBuffer(file);
-
       return false;
     },
     onChange(info) {
@@ -128,8 +131,7 @@ const Home: NextPage = () => {
   };
 
   const onReading = () => {
-    // const textLayer = pageRefList.current[0].nextSibling;
-
+    // const textLayer = pdfRef.current[0].nextSibling;
     // const elements = finDomByText('estibulum eu urna nisl. Aenean at hendrerit', textLayer);
     // addHighlightText(elements);
 
@@ -148,28 +150,36 @@ const Home: NextPage = () => {
           <Button loading={loading} type="primary" onClick={onReading}>
             start reading
           </Button>
-          <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Click or drag file to this area to upload</p>
-            <p className="ant-upload-hint">
-              Support for a single or bulk upload. Strictly prohibit from uploading company data or
-              other band files
-            </p>
-          </Dragger>
+          {!file && (
+            <>
+              <Dragger {...props}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                <p className="ant-upload-hint">
+                  Support for a single or bulk upload. Strictly prohibit from uploading company data
+                  or other band files
+                </p>
+              </Dragger>
+            </>
+          )}
 
           <ChatWindow className="flex flex-col h-full overflow-hidden" />
 
-          <Card style={{ width: 700 }} className="h-full overflow-auto" bodyStyle={{ padding: 0 }}>
-            <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+          <Card
+            style={{ width: 700 }}
+            className="h-full overflow-auto scroll-smooth"
+            bodyStyle={{ padding: 0 }}
+          >
+            {/* @ts-ignore */}
+            <Document ref={pdfRef} file={file} onLoadSuccess={onDocumentLoadSuccess}>
               {Array.from(new Array(numPages), (_el, index) => (
                 <Page
                   key={`page_${index + 1}`}
                   pageNumber={index + 1}
                   width={700}
                   renderAnnotationLayer={false}
-                  canvasRef={ref => pageRefList.current.push(ref as HTMLCanvasElement)}
                 />
               ))}
             </Document>

@@ -11,7 +11,7 @@ interface ChatWindowProps {
 interface MessageItem {
   question?: string;
   reply?: string;
-  references?: { id: number; content: string }[];
+  references?: { id: number; content: string; page_num: number }[];
 }
 
 const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
@@ -38,7 +38,6 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
 
       if (chatWindow) {
         chatWindow.scrollTop = chatWindow.scrollHeight + 100;
-        console.log(chatWindow.scrollTop, chatWindow.scrollHeight);
       }
     }, 0);
   };
@@ -51,7 +50,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        data: { query: value, apiKey: settings.current?.apiKey, matches: 3 }
+        data: { query: value, apiKey: settings.current?.apiKey, matches: 5 }
       });
 
       const prompt = `
@@ -87,12 +86,15 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         setMessageList(pre => {
           return [
             ...pre.slice(0, -1),
-            { ...pre.slice(-1), reply: pre.slice(-1)[0].reply + chunkValue }
+            {
+              ...pre.slice(-1),
+              reply: pre.slice(-1)[0].reply + chunkValue,
+              references: embedRes.data
+            }
           ];
         });
+        requestAnimationFrame(() => scrollToBottom());
       }
-
-      scrollToBottom();
     } catch (error) {
       setLoading(false);
       console.log(error);
@@ -106,7 +108,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
       return;
     }
 
-    setMessageList([...messageList, { question: value }, { reply: '' }]);
+    setMessageList([...messageList, { question: value.trim() }, { reply: '' }]);
     scrollToBottom();
     onReply(value);
   };
