@@ -1,12 +1,11 @@
 import { SettingOutlined } from '@ant-design/icons';
-import { Button, Card, Input, message, Modal } from 'antd';
+import { Button, Card, Form, Input, message, Modal } from 'antd';
 import axios from 'axios';
-import { FC, useRef, useState } from 'react';
+import { FC, Fragment, useEffect, useRef, useState } from 'react';
 import Message from './Message';
 
 interface ChatWindowProps {
   className?: string;
-  apiKey: string;
 }
 
 interface MessageItem {
@@ -15,16 +14,28 @@ interface MessageItem {
   references?: { id: number; content: string }[];
 }
 
-const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
+const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
   const chatWindowEndAnchorRef = useRef<HTMLDivElement>(null);
+  const settings = useRef<any>(null);
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
+  const [showSettingModal, setShowSettingModal] = useState(false);
   const [query, setQuery] = useState('');
   const [messageList, setMessageList] = useState<MessageItem[]>([]);
+
+  useEffect(() => {
+    const localSettings = JSON.parse(localStorage.getItem('settings') as string);
+    if (!localSettings) {
+      setShowSettingModal(true);
+    } else {
+      settings.current = localSettings;
+    }
+  }, [showSettingModal]);
 
   const onSearch = async (value: string) => {
     setQuery('');
     try {
-      if (!apiKey) {
+      if (!settings.current?.apiKey) {
         message.error('please input your apiKey');
         return;
       }
@@ -45,12 +56,12 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        data: { query: value, apiKey, matches: 3 }
+        data: { query: value, apiKey: settings.current?.apiKey, matches: 3 }
       });
       answer.references = embedRes.data;
 
       const prompt = `
-      Use the following passages to provide an answer to the query: "${value}"
+      Use the following text to provide an answer to the query: "${value}"
       ${embedRes.data?.map((d: any) => d.content).join('\n\n')}
       `;
 
@@ -59,7 +70,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, apiKey })
+        body: JSON.stringify({ prompt, apiKey: settings.current?.apiKey })
       });
       setLoading(false);
 
@@ -75,14 +86,21 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
       const decoder = new TextDecoder();
       let done = false;
 
+      const newMessageList = [...messageList];
+      messageList.push(answer);
+      setMessageList(newMessageList);
+
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
         answer.reply = answer.reply + chunkValue;
+        console.log(newMessageList, 'newMessageList', chunkValue);
+
+        newMessageList[messageList.length - 1] = answer;
+        setMessageList(newMessageList);
       }
 
-      setMessageList(pre => [...pre, answer]);
       chatWindowEndAnchorRef.current?.scrollIntoView({
         behavior: 'smooth'
       });
@@ -92,6 +110,18 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
     }
   };
 
+  const onSaveSettings = () => {
+    form
+      .validateFields()
+      .then(values => {
+        localStorage.setItem('settings', JSON.stringify(values));
+        setShowSettingModal(false);
+      })
+      .catch(info => {
+        console.log('Validate Failed:', info);
+      });
+  };
+
   return (
     <>
       <Card
@@ -99,23 +129,23 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
         bodyStyle={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
         title="Chat with PDF"
         bordered={false}
-        extra={<Button icon={<SettingOutlined />}></Button>}
+        extra={
+          <Button onClick={() => setShowSettingModal(true)} icon={<SettingOutlined />}></Button>
+        }
       >
         <div ref={chatWindowEndAnchorRef} className="flex flex-col flex-1 overflow-auto">
           {messageList.map((item, index) => (
-            <>
+            <Fragment key={index}>
               {item.question ? (
                 <Message isQuestion>{item.question}</Message>
               ) : (
-                <Message key={index} references={item.references}>
-                  {item.reply}
-                </Message>
+                <Message references={item.references}>{item.reply}</Message>
               )}
-            </>
+            </Fragment>
           ))}
         </div>
 
-        <div className="py-6">
+        <div className="py-4">
           <Input.Search
             enterButton="Ask Question"
             size="large"
@@ -128,11 +158,22 @@ const ChatWindow: FC<ChatWindowProps> = ({ className, apiKey }) => {
           />
         </div>
 
-        {/* <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-        </Modal> */}
+        <Modal
+          title="Settings"
+          open={showSettingModal}
+          onOk={onSaveSettings}
+          onCancel={() => setShowSettingModal(false)}
+        >
+          <Form form={form}>
+            <Form.Item
+              label="apiKey"
+              name="apiKey"
+              rules={[{ required: true, message: 'Please input your apiKey!' }]}
+            >
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Card>
     </>
   );

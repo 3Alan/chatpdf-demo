@@ -4,10 +4,10 @@ import { supabaseClient } from '@/utils/supabaseClient';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { sentenceList } = req.body as any;
+    const { sentenceList, apiKey } = req.body as any;
 
     const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey
     });
     const openai = new OpenAIApi(configuration);
 
@@ -21,8 +21,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       });
 
       const [{ embedding }] = embeddingResponse.data.data;
-
-      console.log(embedding, '-----------');
 
       const { data, error } = await supabaseClient
         .from('pg')
