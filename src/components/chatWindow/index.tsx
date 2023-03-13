@@ -55,6 +55,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
 
       const prompt = `
       Use the following text to provide an answer to the query: "${value}"
+
       ${embedRes.data?.map((d: any) => d.content).join('\n\n')}
       `;
 
