@@ -1,7 +1,14 @@
 import { SettingOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, message, Modal } from 'antd';
-import axios from 'axios';
-import { FC, Fragment, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import {
+  ClipboardEvent,
+  FC,
+  Fragment,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import Message from './Message';
 
 interface ChatWindowProps {
@@ -21,6 +28,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
   const [form] = Form.useForm();
   const [showSettingModal, setShowSettingModal] = useState(false);
   const [query, setQuery] = useState('');
+  const [queryImage, setQueryImage] = useState<ArrayBuffer>();
   const [messageList, setMessageList] = useState<MessageItem[]>([]);
 
   useEffect(() => {
@@ -45,19 +53,8 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
   const onReply = async (value: string) => {
     try {
       setLoading(true);
-      const embedRes = await axios('/api/search-embed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: { query: value, apiKey: settings.current?.apiKey, matches: 5 }
-      });
 
-      const prompt = `
-      Use the following text to provide an answer to the query: "${value}"
-
-      ${embedRes.data?.map((d: any) => d.content).join('\n\n')}
-      `;
+      const prompt = value;
 
       const answerResponse = await fetch('/api/search-answer', {
         method: 'POST',
@@ -91,7 +88,6 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
             {
               ...pre.slice(-1),
               reply: pre.slice(-1)[0].reply + chunkValue,
-              references: embedRes.data
             }
           ];
         });
@@ -115,6 +111,25 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
     setMessageList([...messageList, { question: value.trim() }, { reply: '' }]);
     scrollToBottom();
     onReply(value);
+  };
+
+  const onPaste = (event: ClipboardEvent<HTMLInputElement>) => {
+    const items = event.clipboardData.items;
+    for (let index in items) {
+      const item = items[index];
+      console.log(item.kind);
+
+      if (item.kind === 'file') {
+        const blob = item.getAsFile() as File;
+        if (blob.type.indexOf('image') === 0) {
+          const reader = new FileReader();
+          reader.onload = event => {
+            setQueryImage(event?.target?.result as ArrayBuffer);
+          };
+          reader.readAsDataURL(blob);
+        }
+      }
+    }
   };
 
   const onSaveSettings = () => {
@@ -141,7 +156,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
           flexDirection: 'column',
           padding: '24px 0'
         }}
-        title="Chat with PDF"
+        title="Chat with Image"
         bordered={false}
         extra={
           <Button onClick={() => setShowSettingModal(true)} icon={<SettingOutlined />}></Button>
@@ -167,6 +182,12 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
         </div>
 
         <div className="p-4 pb-0 border-t border-t-gray-200 border-solid border-x-0 border-b-0">
+          {queryImage && (
+            <div className="relative h-16 w-auto max-w-full mb-4 overflow-hidden">
+              <Image className="object-cover" src={queryImage as any} alt="image" fill />
+            </div>
+          )}
+
           <Input.Search
             enterButton="Ask Question"
             size="large"
@@ -176,6 +197,7 @@ const ChatWindow: FC<ChatWindowProps> = ({ className }) => {
             loading={loading}
             onChange={e => setQuery(e.target.value)}
             onSearch={onSearch}
+            onPaste={onPaste}
           />
         </div>
 
