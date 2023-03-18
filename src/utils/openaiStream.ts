@@ -1,5 +1,5 @@
 import { createParser, ParsedEvent, ReconnectInterval } from 'eventsource-parser';
-import getOpenAIBaseUrl from './getOpenaiBaseUrl';
+import getOpenAIBaseUrl from './getOpenAIBaseUrl';
 
 export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const encoder = new TextEncoder();

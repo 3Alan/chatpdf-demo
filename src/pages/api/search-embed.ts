@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
-import getOpenAIBaseUrl from '../../utils/getOpenaiBaseUrl';
+import getOpenAIBaseUrl from '../../utils/getOpenAIBaseUrl';
 import { supabaseClient } from '../../utils/supabaseClient';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
