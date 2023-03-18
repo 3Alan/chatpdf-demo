@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
+import getOpenAIBaseUrl from '../../utils/getOpenaiBaseUrl';
 import { supabaseClient } from '../../utils/supabaseClient';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -8,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const input = query.replace(/\n/g, ' ');
 
-    const embedRes = await axios(`https://api.openai.com/v1/embeddings`, {
+    const embedRes = await axios(`${getOpenAIBaseUrl()}/v1/embeddings`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`

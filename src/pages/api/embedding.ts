@@ -7,7 +7,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { sentenceList, apiKey } = req.body as any;
 
     const configuration = new Configuration({
-      apiKey
+      apiKey,
+      basePath: process.env.OPENAI_API_PROXY || undefined
     });
     const openai = new OpenAIApi(configuration);
 
