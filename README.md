@@ -13,4 +13,4 @@ You may find the following resources helpful in understanding how this demo was 
 - https://github.com/mckaywrigley/paul-graham-gpt
 - https://github.com/openai/openai-cookbook/blob/main/examples/How_to_stream_completions.ipynb
 - https://github.com/ddiu8081/chatgpt-demo
-- https://github.com/SkywalkerDarren/chatWeb
+- https://www.alanwang.site/blog/chatgpt-pdf
