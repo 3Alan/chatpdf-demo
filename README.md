@@ -4,7 +4,7 @@ This is a simple demo of using ChatGPT to help you read and understand PDF files
 
 ## Demo
 
-To get started with this demo, you can simply visit the [demo site](https://chatgpt-pdf-demo.vercel.app/) and ask any question you have about the GitHub Privacy Statement PDF. The ChatGPT assistant will do its best to assist you with your query.
+To get started with this demo, you can simply visit the [demo site](https://chatpdf-demo.alanwang.site/) and ask any question you have about the GitHub Privacy Statement PDF. The ChatGPT assistant will do its best to assist you with your query.
 
 ## References
 
@@ -12,5 +12,14 @@ You may find the following resources helpful in understanding how this demo was 
 
 - https://github.com/mckaywrigley/paul-graham-gpt
 - https://github.com/openai/openai-cookbook/blob/main/examples/How_to_stream_completions.ipynb
-- https://www.alanwang.site/blog/chatgpt-pdf
 - https://github.com/ddiu8081/chatgpt-demo
+
+## Q&A
+
+### How can I run this project locally?
+
+You can read my [blog](https://www.alanwang.site/en/blog/chatgpt-pdf#how-to-run-demo-locally) tutorials
+
+### Will new features be added?
+
+This is just a Demo and I have no plans to add new features at this time
