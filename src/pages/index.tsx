@@ -43,6 +43,7 @@ function addHighlightText(element: any) {
 
 const Home: NextPage = () => {
   const [file, setFile] = useState<File | string>('/github-privacy.pdf');
+  const disabledUpload = true;
   const [numPages, setNumPages] = useState(null);
   const [loading, setLoading] = useState(false);
   const pdfRef = useRef<unknown>();
@@ -146,25 +147,26 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="bg-slate-100 py-4 h-screen">
-        <div className="flex flex-row justify-center m-auto w-5/6 space-x-4 h-full overflow-hidden">
-          {!file && (
-            <>
-              <Button loading={loading} type="primary" onClick={onReading}>
-                start reading
-              </Button>
-              <Dragger {...props}>
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                <p className="ant-upload-hint">
-                  Support for a single or bulk upload. Strictly prohibit from uploading company data
-                  or other band files
-                </p>
-              </Dragger>
-            </>
+        <div className="flex flex-row justify-center m-auto w-5/6 space-x-4">
+          {!disabledUpload && (
+            <Button disabled={!file} loading={loading} type="primary" onClick={onReading}>
+              start reading
+            </Button>
           )}
-
+          {!disabledUpload && !file && (
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">Click or drag file to this area to upload</p>
+              <p className="ant-upload-hint">
+                Support for a single or bulk upload. Strictly prohibit from uploading company data
+                or other band files
+              </p>
+            </Dragger>
+          )}
+        </div>
+        <div className="flex flex-row justify-center m-auto w-5/6 space-x-4 h-full overflow-hidden">
           <ChatWindow className="flex flex-col h-full overflow-hidden" />
 
           <Card

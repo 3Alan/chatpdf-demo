@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Configuration, OpenAIApi } from 'openai';
 import { supabaseClient } from '@/utils/supabaseClient';
+import getOpenAIBaseUrl from '../../utils/getOpenAIBaseUrl';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -8,7 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const configuration = new Configuration({
       apiKey,
-      basePath: process.env.OPENAI_API_PROXY || undefined
+      basePath: `${getOpenAIBaseUrl()}/v1`  || undefined
     });
     const openai = new OpenAIApi(configuration);
 
