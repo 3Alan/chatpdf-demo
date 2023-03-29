@@ -23,3 +23,11 @@ You can read my [blog](https://www.alanwang.site/en/blog/chatgpt-pdf#how-to-run-
 ### Will new features be added?
 
 This is just a Demo and I have no plans to add new features at this time
+
+If you find this project helpful, please consider giving it a star 🌟
+
+## 🎉🎉🎉
+
+My new open source project is coming soon. Developing using Python, React, and Vite. Supporting highlighting, currently only for Markdown format.
+
+![chat-markdown]('./public/chat-markdown.jpg)
