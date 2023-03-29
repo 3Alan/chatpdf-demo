@@ -30,4 +30,4 @@ If you find this project helpful, please consider giving it a star 🌟
 
 My new open source project is coming soon. Developing using Python, React, and Vite. Supporting highlighting, currently only for Markdown format.
 
-![chat-markdown]('./public/chat-markdown.jpg)
+![chat-markdown](https://raw.githubusercontent.com/3Alan/images/master/img/20230330010115.png)
