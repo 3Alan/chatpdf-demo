@@ -30,4 +30,4 @@ If you find this project helpful, please consider giving it a star 🌟
 
 My new open source project is coming. Developing using Python, React, and Vite. Check it out at 👉 [DocsMind](https://github.com/3Alan/DocsMind)
 
-![DocsMind](https://raw.githubusercontent.com/3Alan/images/master/img/20230507222835.png)
+![DocsMind](https://raw.githubusercontent.com/3Alan/images/master/img/20230507230412.png)
