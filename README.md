@@ -28,6 +28,6 @@ If you find this project helpful, please consider giving it a star 🌟
 
 ## 🎉🎉🎉
 
-My new open source project is coming. Developing using Python, React, and Vite. Check it out at 👉 [chat-markdown](https://github.com/3Alan/chat-markdown)
+My new open source project is coming. Developing using Python, React, and Vite. Check it out at 👉 [DocsMind](https://github.com/3Alan/DocsMind)
 
-![chat-markdown](https://raw.githubusercontent.com/3Alan/images/master/img/20230330010115.png)
+![DocsMind](https://raw.githubusercontent.com/3Alan/images/master/img/20230507222835.png)
